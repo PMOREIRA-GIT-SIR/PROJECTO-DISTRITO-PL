@@ -1,0 +1,99 @@
+<html>
+	<head>
+		<title>
+			Formulario de Distrito - Concelho
+		</title>
+		<script src="jQuery/jquery-1.10.2.js"></script>
+		<script>
+			var XMLdc;
+			var distrito_is_valid = false;
+			var concelho_is_valid = false;
+			
+			$.ajax({
+				url: "portugaldc.xml",
+				dataType : "xml",
+				async : false,
+				success : function (xml) {
+					XMLdc = xml;
+				} 
+			});
+			
+			$(document).ready( function () {
+				//debugger;
+	
+				init_select($("#sdistrito"),"seleccione um distrito");
+				var distritos = $(XMLdc).find("distrito");
+				load_select_distrito($("#sdistrito"),distritos);
+				$("#sdistrito").change( function () {
+					// qual o distrito
+					init_select($("#sconcelho"),"seleccione um concelho");
+					var distrito_id = $("#sdistrito option:selected").val();
+					//alert(distrito_id);
+					no_distrito = $(XMLdc).find("distrito[id='"+distrito_id+"']");
+					lista_concelhos = no_distrito.find("concelho");
+					load_select_concelho($("#sconcelho"),lista_concelhos);
+					distrito_is_valid = true;
+					concelho_is_valid = false;
+				})
+				
+				$("#sconcelho").change( function () {
+					if ($("#sconcelho option:selected").attr('id') != -1)
+						concelho_is_valid = true;
+					else
+						concelho_is_valid = false;
+				});
+				
+				init_select($("#sconcelho"),"seleccione um concelho");
+				
+				$("#f1").submit( function () {
+					if (concelho_is_valid && distrito_is_valid) return true;
+					else return false;
+				})
+				
+			});
+			
+			
+			function load_select_distrito(elemento_selectJQ,lista) {
+				lista.each(function (){
+					var newoption = $("<option/>").attr("value",$(this).attr('id'));
+					newoption.html($(this).find("dnome").text());
+					elemento_selectJQ.append(newoption);
+				})
+			}
+			
+			function load_select_concelho(elemento_selectJQ,lista) {
+				lista.each(function (){
+					var newoption = $("<option/>").attr("value",$(this).attr('id'));
+					newoption.html($(this).text());
+					elemento_selectJQ.append(newoption);
+				})
+			}
+			
+			function init_select(elemento_selectJQ,opcao_defeito) {
+				elemento_selectJQ.empty();
+				var new_option =  $("<option/>").attr('disabled','disabled');
+				new_option.attr('selected','selected');
+				new_option.attr('value','-1');
+				new_option.html(opcao_defeito);
+				elemento_selectJQ.append(new_option);
+			}
+			
+		</script>
+	</head>
+	<body>
+		<form action="show.php" method="get" id="f1">
+			<label for="sdistrito">distrito:</label>
+			<select id="sdistrito" name="distrito">
+				<!-- options -->
+			</select>
+			<br/>
+			<label for="sconcelho">concelho:</label>
+			<select id="sconcelho" name="concelho">
+				<!-- options -->
+			</select>
+			<br/>
+			<input type="submit" value="enviar"/>
+			<input type="reset" value="limpar"/>
+		</form>
+	</body>
+</html>
